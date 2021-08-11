@@ -40,7 +40,8 @@ Query OK, 2 rows affected (0.00 sec)
 系统mysql的管理员名称是root，而一般情况下，数据库管理员都没进行修改，这一定程度上对系统用户穷举的恶意行为提供了便利，此时修改为复杂的用户名，请不要在设定为admin或者administraror的形式，因为它们也在易猜的用户字典中。
 
 ```shell
-mysql> update user set user="newroot" where user="root"; //改成不易被猜测的用户名mysql> flush privileges;
+mysql> update user set user="newroot" where user="root"; //改成不易被猜测的用户名
+mysql> flush privileges;
 ```
 
 ## 关于密码的管理
@@ -138,10 +139,9 @@ max_user_connections 2
 #ERROR 1148 (42000): The used command is not allowed with this MySQL version
 ```
 
---local-infile=0选项启动mysqld从服务器端禁用所有LOAD DATA LOCAL命令，假如需要获取本地文件，需要打开，但是建议关闭。
+`--local-infile=0`选项启动mysqld从服务器端禁用所有LOAD DATA LOCAL命令，假如需要获取本地文件，需要打开，但是建议关闭。
 
-## 
-MySQL服务器权限控制
+## MySQL服务器权限控制
 MySQL权限系统的主要功能是证实连接到一台给定主机的用户，并且赋予该用户在数据库上的SELECT、INSERT、UPDATE和DELETE等权限（详见user超级用户表）。它的附加的功能包括有匿名的用户并对于MySQL特定的功能例如LOAD DATA INFILE进行授权及管理操作的能力。
 
 管理员可以对user，db，host等表进行配置，来控制用户的访问权限，而user表权限是超级用户权限。只把user表的权限授予超级用户如服务器或数据库主管是明智的。对其他用户，你应该把在user表中的权限设成’N’并且仅在特定数据库的基础上授权。你可以为特定的数据库、表或列授权，FILE权限给予你用LOAD DATA INFILE和SELECT … INTO OUTFILE语句读和写服务器上的文件，任何被授予FILE权限的用户都能读或写MySQL服务器能读或写的任何文件。(说明用户可以读任何数据库目录下的文件，因为服务器可以访问这些文件）。 FILE权限允许用户在MySQL服务器具有写权限的目录下创建新文件，但不能覆盖已有文件在user表的File_priv设置Y或N。，所以当你不需要对服务器文件读取时，请关闭该权限。
@@ -161,7 +161,7 @@ Query OK, 0 rows affected (0.00 sec)
 ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
 ```
 
-为了安全起见，随时使用SHOW GRANTS语句检查查看谁已经访问了什么。然后使用REVOKE语句删除不再需要的权限。
+为了安全起见，随时使用**SHOW GRANTS**语句检查查看谁已经访问了什么。然后使用REVOKE语句删除不再需要的权限。
 
 ## 使用chroot方式来控制MySQL的运行目录
 
@@ -173,9 +173,9 @@ Chroot是linux中的一种系统高级保护手段，它的建立会将其与主
 
 对于Web的安全检查，在MySQL官方文档中这么建议，对于web应用，至少检查以下清单：
 
-* 试试用Web形式输入单引号和双引号(‘’’和‘”’)。如果得到任何形式的MySQL错误，立即分析原因。
+* 试试用Web形式输入单引号和双引号(''和"")。如果得到任何形式的MySQL错误，立即分析原因。
 
-* 试试修改动态URL，可以在其中添加%22(‘”’)、%23(‘#’)和%27(‘’’)。
+* 试试修改动态URL，可以在其中添加`%22(")`、`%23(#)`和`%27(')`。
 
 * 试试在动态URL中修改数据类型，使用前面示例中的字符，包括数字和字符类型。你的应用程序应足够安全，可以防范此类修改和类似攻击。 
 
@@ -187,7 +187,7 @@ Chroot是linux中的一种系统高级保护手段，它的建立会将其与主
 
 ## 数据库备份策略
 一般可采用本地备份和网络备份的形式，可采用MySQL本身自带的mysqldump的方式和直接复制备份形式，
-直接拷贝数据文件最为直接、快速、方便，但缺点是基本上不能实现增量备份。为了保证数据的一致性，需要在备份文件前，执行以下 SQL 语句：FLUSH TABLES WITH READ LOCK；也就是把内存中的数据都刷新到磁盘中，同时锁定数据表，以保证拷贝过程中不会有新的数据写入。这种方法备份出来的数据恢复也很简单，直接拷贝回原来的数据库目录下即可。
+直接拷贝数据文件最为直接、快速、方便，但缺点是基本上不能实现增量备份。为了保证数据的一致性，需要在备份文件前，执行以下 SQL 语句：`FLUSH TABLES WITH READ LOCK`；也就是把内存中的数据都刷新到磁盘中，同时锁定数据表，以保证拷贝过程中不会有新的数据写入。这种方法备份出来的数据恢复也很简单，直接拷贝回原来的数据库目录下即可。
 
 使用mysqldump可以把整个数据库装载到一个单独的文本文件中。这个文件包含有所有重建您的数据库所需要的SQL命令。这个命令取得所有的模式（Schema，后面有解释）并且将其转换成DDL语法（CREATE语句，即数据库定义语句），取得所有的数据，并且从这些数据中创建INSERT语句。这个工具将您的数据库中所有的设计倒转。因为所有的东西都被包含到了一个文本文件中。这个文本文件可以用一个简单的批处理和一个合适SQL语句导回到MySQL中。
 
@@ -211,12 +211,12 @@ nagios_backup.(2008-01-24)00:00
 mysql默认未启用SSL连接，使用wireshakr抓包可以查看执行的SQL语句和执行结果，在站库分离、主从复制、主从同步等复杂网络下，导致数据库执行过程可能会被嗅探。
 ### 安装时启动SSL
 在MySQL5.7安装初始化阶段，比之前版本多了一步操作，而这个操作就是安装SSL的。
-```
+```shell
 shell> bin/mysqld --initialize --user=mysql    # MySQL 5.7.6 and up
 shell> bin/mysql_ssl_rsa_setup                 # MySQL 5.7.6 and up
 ```
 当运行完这个命令后，默认会在data_dir目录下生成以下pem文件，这些文件就是用于启用SSL功能的：
-```
+```shell
 [root mysql_data]# ll *.pem
 -rw------- 1 mysql mysql 1675 Jun 12 17:22 ca-key.pem         #CA私钥
 -rw-r--r-- 1 mysql mysql 1074 Jun 12 17:22 ca.pem             #自签的CA证书，客户端连接也需要提供
@@ -228,11 +228,11 @@ shell> bin/mysql_ssl_rsa_setup                 # MySQL 5.7.6 and up
 -rw------- 1 mysql mysql 1675 Jun 12 17:22 server-key.pem     #服务器端私钥文件
 ```
 本地进入MySQL命令行，可以看到如下变量值：
-```
+```shell
 root> mysql -h 10.126.xxx.xxx -udba -p
 ```
 查看SSL开启情况
-```
+```shell
 dba:(none)> show global variables like '%ssl%';
 +---------------+-----------------+
 | Variable_name | Value           |
@@ -249,7 +249,7 @@ dba:(none)> show global variables like '%ssl%';
 +---------------+-----------------+
 ```
 查看dba连接的方式
-```
+```shell
 dba:(none)> \s
 --------------
 /usr/local/mysql/bin/mysql  Ver 14.14 Distrib 5.7.18, for linux-glibc2.5 (x86_64) using  EditLine wrapper
@@ -276,22 +276,22 @@ Uptime:                 2 hours 35 min 48 sec
 * 关闭MySQL服务
 * 运行mysql_ssl_rsa_setup 命令
 * 到data_dir目录下修改.pem文件的所属权限用户为mysql
-```
-    chown -R mysql.mysql *.pem
+```shell
+chown -R mysql.mysql *.pem
 ```
 * 启动MySQL服务
 
 ### 强制某用户必须使用SSL连接数据库
 修改已存在用户 
-```
+```shell
 ALTER USER 'dba'@'%' REQUIRE SSL;
 ```
-#新建必须使用SSL用户
-```
+新建必须使用SSL用户
+```shell
 grant select on *.* to 'dba'@'%' identified by 'xxx' REQUIRE SSL;
 ```
 对于上面强制使用ssl连接的用户，如果不是使用ssl连接的就会报错，像下面这样：
-```
+```shell
 [root]# /usr/local/mysql/bin/mysql -udba -p -h10.126.xxx.xxx --ssl=0
 Enter password: 
 ERROR 1045 (28000): Access denied for user 'dba'@'10.126.xxx.xxx' (using password: YES)
@@ -301,44 +301,44 @@ ERROR 1045 (28000): Access denied for user 'dba'@'10.126.xxx.xxx' (using passwor
 
 下列mysqld选项影响安全：
 
-* --allow-suspicious-udfs
+* `--allow-suspicious-udfs`
 
-* * 该选项控制是否可以载入主函数只有xxx符的用户定义函数。默认情况下，该选项被关闭，并且只能载入至少有辅助符的UDF。这样可以防止从未包含合法UDF的共享对象文件载入函数。
+  该选项控制是否可以载入主函数只有xxx符的用户定义函数。默认情况下，该选项被关闭，并且只能载入至少有辅助符的UDF。这样可以防止从未包含合法UDF的共享对象文件载入函数。
 
 * `--local-infile[={0|1}]`
 
-* * 如果用–local-infile=0启动服务器，则客户端不能使用LOCAL in LOAD DATA语句。
+  如果用–local-infile=0启动服务器，则客户端不能使用LOCAL in LOAD DATA语句。
 
-* --old-passwords
+* `--old-passwords`
 
-* * 强制服务器为新密码生成短(pre-4.1)密码哈希。当服务器必须支持旧版本客户端程序时，为了保证兼容性这很有用。
+  强制服务器为新密码生成短(pre-4.1)密码哈希。当服务器必须支持旧版本客户端程序时，为了保证兼容性这很有用。
 
-*  (OBSOLETE) --safe-show-database
+* `(OBSOLETE) --safe-show-database`
 
-* * 在以前版本的MySQL中，该选项使SHOW DATABASES语句只显示用户具有部分权限的数据库名。在MySQL 5.1中，该选项不再作为现在的 默认行为使用，有一个SHOW DATABASES权限可以用来控制每个账户对数据库名的访问。
+  在以前版本的MySQL中，该选项使SHOW DATABASES语句只显示用户具有部分权限的数据库名。在MySQL 5.1中，该选项不再作为现在的 默认行为使用，有一个SHOW DATABASES权限可以用来控制每个账户对数据库名的访问。
 
-* --safe-user-create
+* `--safe-user-create`
 
-* * 如果启用，用户不能用GRANT语句创建新用户，除非用户有mysql.user表的INSERT权限。如果你想让用户具有授权权限来创建新用户，你应给用户授予下面的权限：
+  如果启用，用户不能用GRANT语句创建新用户，除非用户有mysql.user表的INSERT权限。如果你想让用户具有授权权限来创建新用户，你应给用户授予下面的权限：`mysql> GRANT INSERT(user) ON mysql.user TO 'user_name'@'host_name';`
 
-* * mysql> GRANT INSERT(user) ON mysql.user TO ‘user_name’@’host_name’;
+  这样确保用户不能直接更改权限列，必须使用GRANT语句给其它用户授予该权限。
 
-* * 这样确保用户不能直接更改权限列，必须使用GRANT语句给其它用户授予该权限。
+* `--secure-auth`
 
-* --secure-auth
+  不允许鉴定有旧(pre-4.1)密码的账户。
 
-* * 不允许鉴定有旧(pre-4.1)密码的账户。
+* `--skip-grant-tables`
 
-* --skip-grant-tables
+  这个选项导致服务器根本不使用权限系统。这给每个人以完全访问所有的数据库的权力！（通过执行`mysqladmin flush-privileges`或`mysqladmin eload`命令，或执行`FLUSH PRIVILEGES`语句，你能告诉一个正在运行的服务器再次开始使用授权表。）
 
-* * 这个选项导致服务器根本不使用权限系统。这给每个人以完全访问所有的数据库的权力！（通过执行mysqladmin flush-privileges或mysqladmin eload命令，或执行FLUSH PRIVILEGES语句，你能告诉一个正在运行的服务器再次开始使用授权表。）
-* --skip-name-resolve
+* `--skip-name-resolve`
 
-* * 主机名不被解析。所有在授权表的Host的列值必须是IP号或localhost。
+  主机名不被解析。所有在授权表的Host的列值必须是IP号或localhost。
 
-* --skip-networking
+* `--skip-networking`
 
-* * 在网络上不允许TCP/IP连接。所有到mysqld的连接必须经由Unix套接字进行。
-* --skip-show-database
+  在网络上不允许TCP/IP连接。所有到mysqld的连接必须经由Unix套接字进行。
 
-* * 使用该选项，只允许有SHOW DATABASES权限的用户执行SHOW DATABASES语句，该语句显示所有数据库名。不使用该选项，允许所有用户执行SHOW DATABASES，但只显示用户有SHOW DATABASES权限或部分数据库权限的数据库名。请注意全局权限指数据库的权限。
+* `--skip-show-database`
+
+  使用该选项，只允许有SHOW DATABASES权限的用户执行SHOW DATABASES语句，该语句显示所有数据库名。不使用该选项，允许所有用户执行SHOW DATABASES，但只显示用户有SHOW DATABASES权限或部分数据库权限的数据库名。请注意全局权限指数据库的权限。
